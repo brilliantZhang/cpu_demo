@@ -38,7 +38,7 @@ chklist = [
 #if __name__ == '__main__':
 st.title("基于应用领域的CPU推荐平台")
 st.subheader("选择应用领域")
-data=cpu_score.load_data()
+#data=cpu_score.load_data()
 total_weight = 100
 col1, col2 = st.columns([1, 1])
 select = True
@@ -109,7 +109,7 @@ if st.button("提交"):
 
     with st.spinner('检索中......'):
 
-        df = cpu_score.get_app_weight_result(data, app2score, submit)
+        df = cpu_score.get_app_weight_result(cpu_score.load_data(), app2score, submit)
     st.success('展示推荐Top10 CPU')
 
     st.table(df)
