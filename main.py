@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image
 import json
 import pandas
-import cpu_score
+import cpu_core
 
 image = Image.open('CPU.png')
 import numpy as np
@@ -10,29 +10,29 @@ import numpy as np
 st.image(image)
 
 chklist = [
-    ["Perl interpreter", "", ""],
-    ["GNU C compiler", "", ""],
-    ["Route planning", "", ""],
-    ["XML to HTML conversion via XSLT", "", ""],
-    ["Video compression", "", ""],
-    ["General data compression", "", ""],
-    ["Explosion modeling", "", ""],
-    ["Physics: relativity", "", ""],
-    ["Molecular dynamics", "", ""],
-    ["Ray tracing", "", ""],
-    ["Fluid dynamics", "", ""],
-    ["Weather forecasting", "", ""],
-    ["3D rendering and animation", "", ""],
-    ["Atmosphere modeling", "", ""],
-    ["Wide-scale ocean modeling (climate level)", "", ""],
-    ["Image manipulation", "", ""],
-    ["Computational Electromagnetics", "", ""],
-    ["Regional ocean modeling", "", ""],
-    ["Discrete Event simulation - computer network", "", ""],
-    ["Biomedical imaging: optical tomography with finite elements", "", ""],
-    ["Artificial Intelligence: alpha-beta tree search (Chess)", "", ""],
-    ["Artificial Intelligence: Monte Carlo tree search (Go)", "", ""],
-    ["Artificial Intelligence: recursive solution generator (Sudoku)", "", ""]
+    ["Perl interpreter", "", "", "perl解释器"],
+    ["GNU C compiler", "", "", "GCC"],
+    ["Route planning", "","","路径规划，组合优化/单场车辆调度"],
+    ["XML to HTML conversion via XSLT", "", "","将 XML 文档转换为 HTML、文本或其他 XML 文档类型的 XSLT 处理器"],
+    ["Video compression", "","", "视频压缩"],
+    ["General data compression", "", "", "数据压缩"],
+    ["Explosion modeling", "", "", "流体动力学计算 - 爆炸模型"],
+    ["Physics: relativity", "", "", "物理学计算，广义相对论/数值相对论"],
+    ["Molecular dynamics", "", "", "科学、结构生物学、经典分子动力学模拟"],
+    ["Ray tracing", "", "", "计算机可视化/光线追踪"],
+    ["Fluid dynamics", "", "", "流体动力学，格子玻尔兹曼方法"],
+    ["Weather forecasting", "", "", "天气研究和预报"],
+    ["3D rendering and animation", "", "", "3D 渲染和动画"],
+    ["Atmosphere modeling", "", "","大气环流模型 (AGCM)"],
+    ["Wide-scale ocean modeling (climate level)", "", "","气候级别的海洋建模"],
+    ["Image manipulation", "", "","图像处理"],
+    ["Computational Electromagnetics", "", "","计算电磁学 (CEM)"],
+    ["Regional ocean modeling", "", "","区域海洋模拟系统"],
+    ["Discrete Event simulation - computer network", "", "", "计算机网络的离散事件模拟"],
+    ["Biomedical imaging: optical tomography with finite elements", "", "", "生物医学成像：有限元光学断层扫描"],
+    ["Artificial Intelligence: alpha-beta tree search (Chess)", "", "","人工智能：alpha-beta 树搜索和模式识别"],
+    ["Artificial Intelligence: Monte Carlo tree search (Go)", "", "","人工智能：蒙特卡洛树搜索在围棋中的应用"],
+    ["Artificial Intelligence: recursive solution generator (Sudoku)", "", "","人工智能：递归解生成器在数独游戏中的应用"]
 ]
 
 #if __name__ == '__main__':
@@ -44,14 +44,14 @@ col1, col2 = st.columns([1, 1])
 select = True
 with col1:
     for item in chklist[:9]:
-        item[1] = st.checkbox(item[0])
+        item[1] = st.checkbox(item[3])
 
 with col2:
     for item in chklist[9:18]:
-        item[1] = st.checkbox(item[0])
+        item[1] = st.checkbox(item[3])
 
 for item in chklist[18:24]:
-    item[1] = st.checkbox(item[0])
+    item[1] = st.checkbox(item[3])
 
 flg_init = False
 pre_rightend = 0
@@ -59,13 +59,13 @@ for item in chklist:
     if item[1] == True:
         if not flg_init:
             print(item[0])
-            values = st.slider("应用： " + item[0], 0, 100, (0, 0), key=item[0])
+            values = st.slider("应用： " + item[3], 0, 100, (0, 0), key=item[0])
             flg_init = True
             pre_rightend = values[1]
             item[2] = values  # values[1] - values[0]
         else:
             print(item[0])
-            item[2] = st.slider("应用： " + item[0], 0, 100, (pre_rightend, pre_rightend), key=item[0])
+            item[2] = st.slider("应用： " + item[3], 0, 100, (pre_rightend, pre_rightend), key=item[0])
             # = values#values[1] - values[0]
             pre_rightend = item[2][1]
         st.write("所占权重：", item[2][1] - item[2][0])
@@ -113,6 +113,5 @@ if st.button("提交"):
     st.success('展示推荐Top10 CPU')
 
     st.table(df)
-
 
 
