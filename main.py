@@ -3,7 +3,7 @@ from PIL import Image
 import json
 import pandas
 import cpu_score
-import lxml
+
 image = Image.open('CPU.png')
 import numpy as np
 
