@@ -5,10 +5,8 @@
 
 
 import pandas as pd
-import pymysql
-import xlrd
 import numpy as np
-import numba
+
 #打开数据所在的工作簿，以及选择存有数据的工作表
 def group_feature(df, key, target, aggs):   
         k=key[0]
