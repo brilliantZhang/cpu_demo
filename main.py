@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image
 import json
 import pandas
-import cpu_core
+import cpu_score
 
 image = Image.open('CPU.png')
 import numpy as np
