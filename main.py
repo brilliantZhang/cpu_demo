@@ -13,7 +13,7 @@ chklist = [
     ["Perl interpreter", "", "", "perl解释器"],
     ["GNU C compiler", "", "", "GCC"],
     ["Route planning", "","","路径规划，组合优化/单场车辆调度"],
-    ["XML to HTML conversion via XSLT", "", "","将 XML 文档转换为 HTML、文本或其他 XML 文档类型的 XSLT 处理器"],
+    ["XML to HTML conversion via XSLT", "", "","网页处理"],
     ["Video compression", "","", "视频压缩"],
     ["General data compression", "", "", "数据压缩"],
     ["Explosion modeling", "", "", "流体动力学计算 - 爆炸模型"],
