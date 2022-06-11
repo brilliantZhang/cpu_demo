@@ -13,23 +13,23 @@ def scheduleMonitor(job):
     schedule.every().day.at("00:00").do(job)
     while True:
         schedule.run_pending()
-        
+
 
 categories = {'intspeed' : 'CINT2017',
               'intrate' : 'CINT2017rate',
               'fprate' : 'CFP2017rate',
               'fpspeed' : 'CFP2017'}
-        
+
 def update_all():
     # update new infos
-    
+
     print('1. UPDATING ONLINE SCORES INFO INTO A CSV FILE...')
 #     r = requests.get('https://www.spec.org/cgi-bin/osgresults?conf=cpu2017;op=dump;format=csvdump')
 #     f = open('newly.csv', 'w+')
 #     f.writelines(r.content.decode('utf-8').split('\',\''))
 #     f.close()
     new_rs = pd.read_csv('newly.csv')
-    
+
     # update url_posts files
     print('2. UPDATING URL_POSTS INFO...')
     for category in categories:
@@ -67,22 +67,22 @@ def update_all():
             if os.path.exists('online_' + category + '/' + str(i)) == False:
                 os.mkdir('online_' + category + '/' + str(i))
             filename = 'CPU2017.001.' + category + '.refrate.csv' if category[-1] == 'e' else 'CPU2017.001.' + category + '.csv'
-            
+
             if os.path.exists('online_' + category + '/' + str(i) + '/' + filename) == False:
                 print(i, '/', len(url_posts))
                 urllib.request.urlretrieve('http://www.spec.org' + url_posts[i], './online_' + category + '/' + i + '/' + filename)
                 urllib.request.urlretrieve('http://www.spec.org' + url_posts[i][:-3] + 'cfg', './online_' + category + '/' + i + '/' + filename[:-3] + 'cfg')
-                
+
     print('4. UPDATE ALL 4 SHEETS...')
     update_all_4_sheet()
-    
+
     print('5. UPDATE SQL PART...')
     update_sql()
-    
+
 # COMBINE THE WHOLE SHEET
 def update_all_4_sheet():
     # get all csv files
-    suites = {'500.perlbench_r', '502.gcc_r', '503.bwaves_r', '505.mcf_r', '507.cactuBSSN_r', '508.namd_r', '510.parest_r', 
+    suites = {'500.perlbench_r', '502.gcc_r', '503.bwaves_r', '505.mcf_r', '507.cactuBSSN_r', '508.namd_r', '510.parest_r',
               '511.povray_r', '519.lbm_r', '520.omnetpp_r', '521.wrf_r', '523.xalancbmk_r', '525.x264_r', '526.blender_r', '554.roms_r',
               '527.cam4_r', '531.deepsjeng_r', '538.imagick_r', '541.leela_r', '548.exchange2_r', '557.xz_r', '544.nab_r', '549.fotonik3d_r',
               '600.perlbench_s', '602.gcc_s', '603.bwaves_s', '605.mcf_s', '607.cactuBSSN_s', '619.lbm_s',
@@ -93,7 +93,7 @@ def update_all_4_sheet():
     for category in categories:
         filepath = 'online_' + category
         file_list[category] = {i : filepath + '/' + i + '/' + os.listdir(filepath + '/' + i)[0][:-3] + 'csv' for i in os.listdir(filepath) if i[0] != '.'}
-    
+
     def get_scores_lines(file_list, category, file_idx):
         target_file = file_list[category][file_idx]
         f = open(target_file, 'r+', encoding='unicode-escape')
@@ -104,28 +104,28 @@ def update_all_4_sheet():
             if lines[idx] == '"Selected Results Table"\n':
                 scores_lines = {i.split(',')[0] : i.split(',')[3] for i in lines[idx+3:idx+13]}
         return scores_lines
-    
+
     idx_score_pairs = {category : {} for category in categories}
     for category in file_list:
         print(category)
         for file_idx in file_list[category]:
             idx_score_pairs[category][file_idx] = get_scores_lines(file_list, category, file_idx)
     print('DONE')
-    
+
     url_idx_pairs = {category : {} for category in categories}
     for category in categories:
         f = open('url_posts_' + category + '.txt', 'r+')
         lines = f.readlines()
         f.close()
         url_idx_pairs[category] = {i.split(':')[1].strip(): i.split(':')[0].strip() for i in lines}
-    
+
     df = pd.read_csv('newly.csv')
-    
+
     dfs = []
     for category in categories:
         df_tmp = df[df['Benchmark'] == categories[category]]
         df_tmp['Scores_details'] = df_tmp['Disclosure'].apply(
-                                        lambda x: 
+                                        lambda x:
                                         idx_score_pairs[category][
                                             url_idx_pairs[category][
                                                 x[x.find('>HTML</A> <A HREF="') + 19:x.find('CSV') - 2]
@@ -167,11 +167,11 @@ def update_sql():
 
 
     conn = pymysql.connect(
-            host='localhost', 
-            user='root', 
-            passwd='root',  
-            db='data_platform',  
-            port=3306,  
+            host='localhost',
+            user='root',
+            passwd='root',
+            db='data_platform',
+            port=3306,
             charset='utf8'
             )
     # 获得游标
@@ -198,11 +198,11 @@ def update_sql():
 
 
     conn = pymysql.connect(
-            host='localhost', 
-            user='root', 
-            passwd='root', 
-            db='data_platform',  
-            port=3306,  
+            host='localhost',
+            user='root',
+            passwd='root',
+            db='data_platform',
+            port=3306,
             charset='utf8'
             )
     # 获得游标
@@ -216,7 +216,7 @@ def update_sql():
     conn.commit()
     conn.close()
     print('写入数据库成功')
-    
+
 # test schedule - success
 scheduleMonitor(update_all)
 # update_all()
