@@ -135,7 +135,12 @@ def update_all_4_sheet():
             df_tmp[k] = df_tmp['Scores_details'].apply(lambda x : x[k] if k in x else np.nan)
         del df_tmp['Scores_details']
         dfs.append(df_tmp)
-    
+    # Some columns cleaning part
+    df_all.rename(columns={'Hardware Vendor\t' : 'Vendor',
+                           '# Cores' : 'Cores',
+                           '# Chips ' : 'Chips',
+                           '# Enabled Threads Per Core' : 'Threads',
+                           'Processor ' : 'Processor', 'Updated ' : 'Updated'})
     df_all = pd.concat(dfs, axis=0)
     df_all.to_csv('added_scores_details.csv', index=False)
 
