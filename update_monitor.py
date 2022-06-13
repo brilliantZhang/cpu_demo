@@ -616,7 +616,11 @@ def update_clickhouse():
             tmp_c[i] = tmp_c[i][:tmp_c[i].find('Compiler')].strip() if 'Compiler' in tmp_c[i] else tmp_c[i].strip()
             tmp_c[i] = tmp_c[i].replace('Intel C++', 'Intel C/C++').replace('Intel C++', 'Intel C/C++').replace('Fortran, Intel Fortran', 'Intel Fortran').strip().strip(',').strip()
             if tmp_c[i] == '':
-                tmp_c[i] = tmp_line[i][tmp_line[i].find('Build') + 15: tmp_line[i].find('Compiler') + 15].replace('Intel C++', 'Intel C/C++').replace('Intel C++', 'Intel C/C++').replace('Fortran, Intel Fortran', 'Intel Fortran').strip().strip(',').strip()
+                tmp_c[i] = tmp_line[i][tmp_line[i].find('Build') + 15: tmp_line[i].find('Compiler')].replace('Intel C++', 'Intel C/C++').replace('Intel C++', 'Intel C/C++').replace('Fortran, Intel Fortran', 'Intel Fortran').strip().strip(',').strip()
+            elif tmp_c[i] == 'Intel':
+                tmp_c[i] = 'Intel C/C++' if 'C' in i else 'Intel Fortran'
+            if 'for Linux' in tmp_c[i] or 'for,' in tmp_c[i]:
+                tmp_c[i] = tmp_line[i][: tmp_line[i].find('for')].strip().strip(',').strip()
         tmp_line = {k : (tmp_c[k], tmp_v[k]) for k in tmp_line}
         return tmp_line
     
