@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <!-- CSS -->
+    <link href="https://unpkg.com/bootstrap-table@1.20.2/dist/bootstrap-table.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/bootstrap.css">
+    <link rel="stylesheet" href="../static/css/font-awesome.css">
+    <link rel="stylesheet" href="../static/css/index.css">
+    <link rel="stylesheet" href="../static/css/font-change.css">
+    <link rel="stylesheet" href="../static/css/bootstrap-select.min.css">
+
+    <script type="text/javascript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.0-alpha1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../static/css/bootstrap-select.css"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.20.2/dist/bootstrap-table.min.js"></script>
+
+    <title>SPECCPU2017数据中台</title>
+    <script type="text/javascript">
+        var selectoptions = {
+            "ven": "", "ker": "", "linux": "", "cpu": "",
+            "serv": "", "cores": "", "chips": "", "memmin": "", "memmax": "", "hmin": "", "hmax": ""
+        }
+
+        $(document).ready(function () {
+            function operateFormatter(value, row, index) {
+                return [
+                    '<a class="like" href="javascript:void(0)" title="详情">',
+                    '<i class="fa fa-heart"></i>',
+                    '</a>  ',
+                    '<a class="remove" href="javascript:void(0)" title="Remove">',
+                    '<i class="fa fa-trash"></i>',
+                    '</a>'
+                ].join('')
+            }
+
+            $("#loading").hide()
+            $("#table").hide()
+            $("#search").click(function () {
+                selectoptions.cpu = $('#cpu').val();
+                selectoptions.serv = $('#server').val();
+                selectoptions.cores = $('#cores').val();
+                selectoptions.chips = $('#chips').val();
+                selectoptions.memmin = $('#memomin').val();
+                selectoptions.memmax = $('#memomax').val();
+                selectoptions.hmin = $('#hardmin').val();
+                selectoptions.hmax = $('#hardmax').val();
+
+                $("#loading").show()
+                $.ajax({
+                    type: "POST",
+                    url: "http://39.107.240.110:5000/search",
+                    dataType: 'json',
+                    data: {
+                        'vendor': selectoptions.ven,
+                        'kernel': selectoptions.ker,
+                        'linux': selectoptions.linux,
+                        'cpu': selectoptions.cpu,
+                        'server': selectoptions.serv,
+                        'cores': selectoptions.cores,
+                        'chips': selectoptions.chips,
+                        'memomin': selectoptions.memmin,
+                        'memomax': selectoptions.memmax,
+                        'hardmin': selectoptions.hmin,
+                        'hardmax': selectoptions.hmax
+                    },
+                    xhrFields: { 'Access-Control-Allow-Origin': '39.107.240.110' },
+                    success: function (data) {
+                        $('#table').bootstrapTable('destroy');
+                        var rawdata = data.result;
+                        var formatted = [];
+                        var $table = $('#table')
+                        $('#table').show()
+                        for (var i = 0, len = rawdata.length; i < len; i++) {
+                            var j = 0;
+                            var json_pattern = {
+                                'machid': '', 'Vendor': '', 'System': '', 'Cores': '', 'Chips': '',
+                                'Memory': '', 'MemoSize(GB)': '', 'MemoNum': '', 'Storage': '', 'DiskSize(TB)': '',
+                                'SSD': '', 'OperatingSystem': '', 'OS': '', 'OSVersion': '', 'KernelVersion': '',
+                                'FileSystem': '', 'Compiler': '', 'FC': '', 'FV': '', 'CC': '', 'CV': '', 'C++C': '',
+                                'C++V': '', 'cpuid': '', 'cpu': '', 'detailurl': '', 'predurl': ''
+                            };
+                            for (var key in json_pattern) {
+                                json_pattern[key] = rawdata[i][j];
+                                j = j + 1;
+                            }
+                            json_pattern['detailurl'] = 'http://39.107.240.110:8501/predition?machid=' + json_pattern['machid'];
+                            json_pattern['predurl'] = 'http://39.107.240.110:8501/details?machid=' + json_pattern['cpuid'];
+                            formatted.push(json_pattern);
+                        }
+
+                        if (formatted.length == 0) {
+                            $('#table').hide();
+                            $('.content').text = '未查到合适的服务器'
+                        } else {
+                            $table.bootstrapTable({
+                                data: formatted, 
+                                height: 500,
+                                columns: [
+                                    {
+                                        field: 'Vendor',
+                                        title: '供应商',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle',
+                                        sortable: true
+                                    },
+                                    {
+                                        field: 'System',
+                                        title: '服务器',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'Cores',
+                                        title: '核数',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'Chips',
+                                        title: 'Chips',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'MemoSize(GB)',
+                                        title: '内存',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'DiskSize(TB)',
+                                        title: '硬盘(TB)',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'SSD',
+                                        title: '是否固态硬盘',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'OS',
+                                        title: '操作系统',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'OSVersion',
+                                        title: 'OS版本',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'KernelVersion',
+                                        title: '内核版本',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'FileSystem',
+                                        title: '文件系统',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'FC',
+                                        title: 'Fortran编译器',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'FV',
+                                        title: 'Fortran编译器版本',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'CC',
+                                        title: 'C编译器',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'CV',
+                                        title: 'C编译器版本',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'C++C',
+                                        title: 'C++编译器',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'C++V',
+                                        title: 'C++编译器版本',
+                                        align: "center",
+                                        halign: "center",
+                                        valign: 'middle'
+                                    },
+                                    {
+                                        field: 'operate',
+                                        title: '操作',
+                                        align: 'center',
+                                        valign: 'middle',
+                                        width: 200,
+                                        events: {
+                                            'click #detail': function (e, value, row, index) {
+                                                window.open('http://39.107.240.110:8501/details?machid='+row.machid);                                                
+                                            },
+                                            'click #predict': function (e, value, row, index) {
+                                                window.open('http://39.107.240.110:8501/predition?machid='+row.machid);
+                                            }
+                                        },
+                                        formatter: function (value, row, index) {
+                                            var result = "";
+                                            result += '<button id="detail" class="btn btn-info" data-toggle="modal" data-target="#editModal">详情</button>';
+                                            result += '<button id="predict" class="btn btn-danger" style="margin-left:10px;">预测</button>';
+                                            return result;
+                                        }
+                                    }
+
+                                ]
+                            })
+                        }
+
+                        $("#loading").hide()
+                    }
+                })
+            });
+
+            $('#vendorchosen').change(function () {
+                if ($(this).find("option:selected").text() == "选择供应商") {
+                    selectoptions.ven = "";
+                } else {
+                    selectoptions.ven = $(this).find("option:selected").text();
+                }
+
+
+            });
+            $('#kernelchosen').change(function () {
+                if ($(this).find("option:selected").text() == "选择内核版本") {
+                    selectoptions.ker = "";
+                } else {
+                    selectoptions.ker = $(this).find("option:selected").text();
+                }
+            });
+            $('#linuxchosen').change(function () {
+                if ($(this).find("option:selected").text() == "选择Linux发行版本") {
+                    selectoptions.linux = "";
+                } else {
+                    selectoptions.linux = $(this).find("option:selected").text();
+                }
+
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <!------------------------- 顶部菜单-------------------------->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <p class="navbar-brand" href="index.html">SPECCPU2017 数据中台 </p>
+            </div>
+
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="https://www.spec.org/cpu2017/results/cpu2017.html">查看源数据</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!------------------------------ 左侧菜单选项 ------------------------->
+    <div class="container-fluid">
+        <div class="row-fluie">
+            <div class="col-sm-3 col-md-2 sidebar">
+                <ul class="nav nav-sidebar">
+                    <li><a href="/" class="nav-header menu-first collapsed">数据查询</a></li>
+                    <li><a href="https://data-platform.kb.us-central1.gcp.cloud.es.io:9243/app/dashboards#/view/b97d60a0-e02b-11ec-8b7c-67bcdcb45743?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-15m,to:now))" class="nav-header menu-first collapsed">数据大屏</a>
+                    </li>
+                    <li><a href="https://share.streamlit.io/brilliantzhang/cpu_demo/main.py" class="nav-header menu-first collapsed">服务器推荐</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!------------------------------ 右侧内容展示 ----------------------------->
+    <div class="container p-5 my-5 bg-dark text-white">
+        <h1 class="page-header"> 数据查询 <small> 根据查询条件筛选合适的机型 </small></h1>
+
+        <!-- 载入左侧菜单指向的jsp（或html等）页面内容 -->
+        <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <div id="selectvendor" class="col-sm-8">
+                    <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="vendorchosen">
+                        <option selected>选择供应商</option>
+                        <option value="1">ASUSTeK Computer Inc.</option>
+                        <option value="2">Cisco Systems</option>
+                        <option value="3">Dell Inc.</option>
+                        <option value="4">Epsylon Sp. z o.o. Sp. Komandytowa</option>
+                        <option value="5">Fujitsu</option>
+                        <option value="6">GIGA-BYTE TECHNOLOGY CO., LTD.</option>
+                        <option value="7">Hewlett Packard Enterprise</option>
+                        <option value="8">Hitachi Vantara</option>
+                        <option value="9">Huawei</option>
+                        <option value="10">Inspur Corporation</option>
+                        <option value="11">Lenovo Global Technology</option>
+                        <option value="12">NEC Corporation</option>
+                        <option value="13">Nettrix</option>
+                        <option value="14">New H3C Technologies Co., Ltd.</option>
+                        <option value="15">Nokia</option>
+                        <option value="16">Quanta Cloud Technology</option>
+                        <option value="17">Sugon</option>
+                        <option value="18">Sun Microsystems</option>
+                        <option value="19">Supermicro</option>
+                        <option value="20">Tyrone Systems</option>
+                        <option value="21">xFusion</option>
+                        <option value="22">3Score</option>
+                        <option value="23">ATOS</option>
+                        <option value="24">Acer Incorporated</option>
+                        <option value="25">Altos Computing Inc.</option>
+                        <option value="26">Format sp. z o.o.</option>
+                        <option value="27">GIGA-BYTE TECHNOLOGY CO., LTD</option>
+                        <option value="28">H3C</option>
+                        <option value="29">IBM Corporation</option>
+                        <option value="30">Intel Corporation</option>
+                        <option value="31">KTNF</option>
+                        <option value="32">M Computers s.r.o.</option>
+                        <option value="33">Oracle Corporation</option>
+                        <option value="34">ScaleMP</option>
+                        <option value="35">Uniwide</option>
+                        <option value="36">Yadro</option>
+                        <option value="37">ZTE Corporation</option>
+                    </select>
+                </div>
+                <div id="selectcpu" class="col-sm-4">
+                    <label for="cpu" class="form-label">CPU（输入关键字）</label>
+                    <input type="cpu" class="form-control" id="cpu">
+                </div>
+            </div>
+        </form>
+
+        <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <div id="selectkernel" class="col-sm-3">
+                    <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="kernelchosen">
+                        <option selected>选择内核版本</option>
+                        <option value="1">3.10.0</option>
+                        <option value="2">3.12.49</option>
+                        <option value="3">3.12.53</option>
+                        <option value="4">3.19.1</option>
+                        <option value="5">3.20.1</option>
+                        <option value="6">3.5.2</option>
+                        <option value="7">4.12.14</option>
+                        <option value="8">4.15.0</option>
+                        <option value="9">4.18.0</option>
+                        <option value="10">4.4.10</option>
+                        <option value="11">4.4.11</option>
+                        <option value="12">4.4.12</option>
+                        <option value="13">4.4.13</option>
+                        <option value="14">4.4.16</option>
+                        <option value="15">4.4.21</option>
+                        <option value="16">4.4.70</option>
+                        <option value="17">4.4.73</option>
+                        <option value="18">4.6.1</option>
+                        <option value="19">5.0.0</option>
+                        <option value="20">5.11.0</option>
+                        <option value="21">5.13.0</option>
+                        <option value="22">5.19.1</option>
+                        <option value="23">5.3.18</option>
+                        <option value="24">5.4.0</option>
+                        <option value="25">5.7.1</option>
+                    </select>
+                </div>
+                <div id="selectlinux" class="col-sm-9">
+                    <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="linuxchosen">
+                        <option selected>选择Linux发行版本</option>
+                        <option value="1">Ubuntu</option>
+                        <option value="3">Red Hat Enterprise Linux release</option>
+                        <option value="5">SUSE</option>
+                        <option value="7">Red Hat Enterprise Linux</option>
+                        <option value="8">CentOS Linux</option>
+                        <option value="12">Solaris 10 1/13</option>                        
+                        <option value="14">RHEL</option>
+                        <option value="19">Oracle Solaris</option>
+                        <option value="21">kylin release</option>
+                        <option value="22">openEuler release</option>
+                        <option value="23">AIX 7.2 TL5 SP3</option>
+                        <option value="24">SLES</option>
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </form>
+        <form>
+            <div class="row">
+                <div class="col-md-8">
+                    <label for="server" class="form-label">服务器名称（输入关键字）</label>
+                    <input type="server" class="form-control" id="server">
+                </div>
+                <div class="col-md-2">
+                    <label for="cores" class="form-label">核数</label>
+                    <input type="cores" class="form-control" id="cores">
+                </div>
+                <div class="col-md-2">
+                    <label for="chips" class="form-label">插槽数</label>
+                    <input type="chips" class="form-control" id="chips">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="memomin" class="form-label">内存 下限(GB)</label>
+                    <input type="memomin" class="form-control" id="memomin">
+                </div>
+                <div class="col-md-3">
+                    <label for="memomax" class="form-label">内存 上限(GB)</label>
+                    <input type="memomax" class="form-control" id="memomax">
+                </div>
+                <div class="col-md-3">
+                    <label for="hardmin" class="form-label">硬盘 下限(GB)</label>
+                    <input type="hardmin" class="form-control" id="hardmin">
+                </div>
+                <div class="col-md-3">
+                    <label for="hardmax" class="form-label">硬盘 上限(GB)</label>
+                    <input type="hardmax" class="form-control" id="hardmax">
+                </div>
+            </div>
+
+        </form>
+        <div class="btnsearch">
+            <button type="button" class="btn btn-primary" id="search">查询</button>
+        </div>
+        <div class="spinner-border text-dark" role="status" id="loading">
+            <span class="visually-hidden">检索中...</span>
+        </div>
+        <div class="content">
+            <table class="table table-striped" id="table">                           
+            </table>
+        </div>
+    </div>
+
+</body>
+
+</html>
